@@ -1,0 +1,270 @@
+//Функции
+
+// 1
+
+create or replace function F1 (a IN Number) 
+AS 
+n Number; 
+exc Exception; 
+Begin 
+Select count(*) into n 
+From animals 
+IF (n=6) Then 
+Raise exc; 
+End IF; 
+return n; 
+Exception when exc THAN 
+Raise_aplication_EROR(=20252,'Ничего не найдено'); 
+End; 
+
+// 2
+
+create or replace function fluk(s in number:= 10) 
+Return number 
+as 
+a int:=2; 
+b int :=1; 
+c int :=0; 
+x int :=2; 
+Begin 
+Loop 
+exit when x>s; 
+x:=x+1; 
+c:=a+b; 
+x:=x+1; 
+a:=b+c; 
+x:=x+1; 
+b:=a+c; 
+x:=x+1; 
+End Loop; 
+Return b; 
+End; 
+
+// 3
+
+create or replace Function fn3 
+Return Number 
+AS c Number; 
+
+BEGIN 
+SELECT Count(*) INTO c FROM Animals; 
+return c; 
+END; 
+
+// 4
+
+create or replace Function fn4 (str IN VARCHAR2) 
+Return Number 
+AS c Number; 
+
+BEGIN 
+Select Count(*) INTO c 
+From Animals a, Species s, Genus g, Family f, Order_a o 
+Where a.Species_ID = s.ID and s.Genus_ID = g.ID and g.Family_ID = f.ID and f.Order_a_ID = o.ID and o.Name = str; 
+return c; 
+END; 
+
+// 5
+
+create or replace function fn5 ( a in varchar2:='Кекс') 
+return number as 
+c number :=0; 
+begin 
+select count(*) into c from animals, childs 
+where animals.id = childs.parent_id and animals.name=a; 
+return c; 
+end; 
+
+// 6
+
+create or replace Function fn6 (s_ID IN NUMBER) 
+Return Number 
+AS c Number; 
+
+BEGIN 
+Select Count(*) INTO c 
+From Animals a, K_A k 
+Where a.ID = k.A_ID and k.K_ID = s_ID and k.Finish_D is null; 
+return c; 
+END; 
+
+// 7
+
+create or replace Function fn7 
+Return Varchar2 
+AS c varchar2(50); 
+
+BEGIN 
+Select f.name INTO c 
+From (Select s.name, Count(*) as Co 
+From animals a, Species s 
+Where a.Species_ID = s.ID 
+Group by s.name) f 
+Where f.Co = (Select MAX(CO) from (Select s.ID, Count(*) as Co 
+From animals a, Species s 
+Where a.Species_ID = s.ID 
+Group by s.ID)); 
+return c; 
+END; 
+
+// 8
+
+create or replace Function fn8 (str IN VARCHAR2) 
+Return Number 
+AS c Number; 
+BEGIN 
+Select AVG(a.Weight) INTO c 
+From Animals a, Species s 
+Where a.Species_ID = s.ID and s.Name = str; 
+return c; 
+END; 
+
+// 9
+
+create or replace Function fn9 
+Return VARCHAR2 
+AS c VARCHAR2(50); 
+BEGIN 
+Select Name INTO c 
+From (Select AVG(a.Length) as srl, g.Name 
+From Animals a, Species s, Genus g 
+Where a.Species_ID = s.ID and s.Genus_ID = g.ID 
+Group by g.Name) o 
+Where srl = (select MAX(j.srl) from (Select AVG(a.Length) as srl, g.Name 
+From Animals a, Species s, Genus g 
+Where a.Species_ID = s.ID and s.Genus_ID = g.ID 
+Group by g.Name) j); 
+return c; 
+END; 
+
+//Процедуры 
+
+// 1
+
+create or replace procedure pr(a in out number) as 
+b number; 
+Begin 
+dbms_output.put_line(a); 
+b:=a+1; 
+end; 
+
+// 2
+
+create or replace procedure kollatc(b in number) 
+AS a number; 
+BEGIN 
+a:=b; 
+While( a>1) 
+LOOP 
+If mod(a,2)=0 then 
+a:=a/2; 
+Else a:=(a*3)+1; 
+End If; 
+dbms_output.put_line(a); 
+END LOOP; 
+
+End; 
+
+// 3
+
+create or replace PROCEDURE luk(s in number:= 10) 
+as 
+a int:=2; 
+b int :=1; 
+c int :=0; 
+Begin 
+dbms_output.put_line(a); 
+dbms_output.put_line(b); 
+Loop 
+exit when a>s; 
+c:=a+b; 
+dbms_output.put_line(c); 
+a:=b+c; 
+dbms_output.put_line(a); 
+b:=a+c; 
+dbms_output.put_line(b); 
+End Loop; 
+End; 
+
+// 4 
+create or replace procedure prth 
+as Cursor get_animals IS 
+Select* From animals; 
+all_animals get_animals%rowtype; 
+
+Begin 
+Open get_animals; 
+LOOP 
+Fetch get_animals INTO all_animals; 
+Exit when get_animals%NotFound; 
+dbms_output.put_line('name= '||all_animals.name||'db= '||all_animals.BIRTH||'WEIGHT= '||all_animals.WEIGHT||'LENGTH= '||all_animals.LENGTH||'HEIGHT= '||all_animals.HEIGHT); 
+END LOOP; 
+END; 
+
+// 5 
+create or replace PROCEDURE temp 
+AS 
+s varchar(10); 
+BEGIN 
+
+LOOP 
+dbms_output.put_line(a); 
+Update pricelist set number=number+1; 
+Exit when a>10; 
+a:=a+1; 
+
+End LOOP; 
+End;
+
+// Исключения 
+
+create or replace procedure exc4 
+AS 
+ex1 exception; 
+Cursor get_animals IS 
+Select k.name, k.surname, k.birth From keepers k 
+WHERE to_char(k.birth,'DDD') BETWEEN to_char(sysdate,'DDD') AND (to_char(sysdate,'DDD')+15); 
+
+
+r number ; 
+Begin 
+Select count(*) into r From (Select k.name, k.surname, k.birth From keepers k 
+WHERE to_char(k.birth,'DDD') BETWEEN to_char(sysdate,'DDD') AND (to_char(sysdate,'DDD')+15)); 
+if (r=0) THEN RAISE ex1; 
+Open get_animals; 
+LOOP 
+Fetch get_animals INTO all_animals; 
+Exit when get_animals%NotFound; 
+dbms_output.put_line('name= '||all_animals.name||'surname= '|| all_animals.surname||'birthday= '||all_animals.birth); 
+END LOOP; 
+END IF; 
+Close get_animals; 
+
+exception 
+when ex1 then 
+Begin 
+dbms_output.put_line('Дней рождений нет'); 
+end; 
+end; 
+
+create or replace procedure exc5(n in number) 
+AS 
+ex1 exception; 
+c varchar2(50); 
+
+Begin 
+if (n<=0 or n>4) THEN RAISE ex1; 
+Else 
+Select Name into c from(Select a.name, a.birth 
+from animals a 
+GROUP BY a.birth, a.name 
+Having count(*)=n 
+order by a.birth); 
+END IF; 
+
+exception 
+when ex1 then 
+Begin 
+dbms_output.put_line('Недопустимое число. Введите число больше 0 и меньше 5'); 
+end; 
+end;
